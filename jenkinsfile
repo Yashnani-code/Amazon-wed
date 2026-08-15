@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building Amazon website...'
+                sh 'ls -la'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing website...'
+                sh 'test -f index.html'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Amazon website deployment successful!'
+            }
+        }
+    }
+}
