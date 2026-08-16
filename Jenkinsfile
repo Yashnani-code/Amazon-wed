@@ -6,7 +6,7 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git 'https://github.com/Yashnani-code/Amazon-wed.git'
+                git branch:'main',url 'https://github.com/Yashnani-code/Amazon-wed.git'
             }
         }
 
