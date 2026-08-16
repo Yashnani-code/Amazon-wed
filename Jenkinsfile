@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'YOUR_GITHUB_REPOSITORY_URL'
+                git branch: 'main',url'https://github.com/Yashnani-code/Amazon-wed.git'
             }
         }
 
