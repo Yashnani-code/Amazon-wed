@@ -1,44 +1,57 @@
 pipeline {
+
     agent any
 
     stages {
 
-        stage('Checkout') {
+        stage('Clone Code') {
             steps {
-                checkout scm
+                git 'YOUR_GITHUB_REPOSITORY_URL'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building Amazon-style website...'
-                sh 'ls -la'
+                sh 'docker build -t yourdockerhubusername/amazon:latest .'
             }
         }
 
-        stage('Test') {
+        stage('Login DockerHub') {
             steps {
-                echo 'Running website tests...'
-                sh 'test -f index.html'
-                sh 'test -f style.css'
-                sh 'test -f script.js'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
+                }
             }
         }
 
-        stage('Deploy') {
+        stage('Push Image') {
             steps {
-                echo 'Website deployment stage completed.'
+                sh 'docker push yourdockerhubusername/amazon:latest'
             }
         }
-    }
 
-    post {
-        success {
-            echo 'SUCCESS: Amazon-style website pipeline completed!'
-        }
+        stage('Deploy to Container') {
+            steps {
+                sh '''
+                    docker stop amazon || true
+                    docker rm amazon || true
 
-        failure {
-            echo 'FAILED: Please check the Jenkins console log.'
+                    docker pull yourdockerhubusername/amazon:latest
+
+                    docker run -d \
+                      --name amazon \
+                      -p 3000:80 \
+                      yourdockerhubusername/amazon:latest
+                '''
+            }
         }
     }
 }
