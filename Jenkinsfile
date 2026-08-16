@@ -1,57 +1,29 @@
 pipeline {
-
     agent any
 
     stages {
 
-        stage('Clone Code') {
+        stage('Checkout') {
             steps {
-                git branch:'main',url 'https://github.com/Yashnani-code/Amazon-wed.git'
+                git 'YOUR_GITHUB_REPOSITORY_URL'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t yourdockerhubusername/amazon:latest .'
+                sh 'docker build -t amazon:latest .'
             }
         }
 
-        stage('Login DockerHub') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    '''
-                }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                sh 'docker push yourdockerhubusername/amazon:latest'
-            }
-        }
-
-        stage('Deploy to Container') {
+        stage('Deploy Container') {
             steps {
                 sh '''
                     docker stop amazon || true
                     docker rm amazon || true
-
-                    docker pull yourdockerhubusername/amazon:latest
-
-                    docker run -d \
-                      --name amazon \
-                      -p 3000:80 \
-                      yourdockerhubusername/amazon:latest
+                    docker run -d --name amazon -p 3000:80 amazon:latest
                 '''
             }
         }
+
     }
 }
